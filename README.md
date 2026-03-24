@@ -1,70 +1,189 @@
-# Getting Started with Create React App
+# NextAI (PDF Q&A + Voice Chat)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack app that lets you:
+- upload a PDF
+- ask questions about that PDF (RAG with LangChain)
+- optionally use voice chat mode (speech recognition + text-to-speech)
 
-## Available Scripts
+Frontend: React + Ant Design  
+Backend: Express + Multer + LangChain + OpenAI
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- PDF upload to backend (`/upload`)
+- Question answering over uploaded PDF (`/chat?question=...`)
+- Conversation history UI
+- Voice chat mode:
+  - speech recognition (microphone -> text)
+  - text-to-speech (assistant answer -> audio)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Tech Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Frontend: `react`, `antd`, `axios`, `speak-tts`, `react-speech-recognition`
+- Backend: `express`, `multer`, `dotenv`, `langchain`
 
-### `npm test`
+## Project Structure
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```txt
+nextai/
+  src/
+    App.js
+    components/
+      ChatComponent.js
+      PdfUploader.js
+      RenderQA.js
+  server/
+    server.js      # Express API (/upload, /chat)
+    chat.js        # LangChain PDF QA pipeline
+    uploads/       # Uploaded PDFs
+```
 
-### `npm run build`
+## Environment Variables
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Create these files:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1) Root `.env`:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```env
+REACT_APP_DOMAIN=http://localhost:5001
+```
 
-### `npm run eject`
+2) `server/.env`:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```env
+OPENAI_API_KEY=your_openai_key
+# Optional:
+# OPENAI_CHAT_MODEL=gpt-5.4-nano
+# PORT=5001
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Notes:
+- Backend currently supports both `OPENAI_API_KEY` and `REACT_APP_OPENAI_API_KEY`.
+- Use `OPENAI_API_KEY` going forward.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Install
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+From project root:
 
-## Learn More
+```bash
+npm install
+cd server && npm install && cd ..
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Run
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+From project root:
 
-### Code Splitting
+```bash
+npm run dev
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+This runs:
+- frontend at `http://localhost:3000`
+- backend at `http://localhost:5001`
 
-### Analyzing the Bundle Size
+If port 3000 is occupied:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+kill -9 $(lsof -ti :3000)
+npm run dev
+```
 
-### Making a Progressive Web App
+## API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### 1) Upload PDF
 
-### Advanced Configuration
+`POST /upload`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- Content type: `multipart/form-data`
+- Field name: `file`
 
-### Deployment
+Example with curl:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```bash
+curl -X POST http://localhost:5001/upload \
+  -F "file=@/absolute/path/to/your.pdf"
+```
 
-### `npm run build` fails to minify
+### 2) Ask Question
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+`GET /chat?question=...`
+
+Example:
+
+```bash
+curl "http://localhost:5001/chat?question=What%20is%20this%20pdf%20about%3F"
+```
+
+Important:
+- You must upload a PDF first after each server restart.
+- Do not wrap question with extra single quotes.
+
+## Frontend Flow
+
+1) `PdfUploader` uploads selected file to backend.
+2) `ChatComponent` sends user question to `/chat`.
+3) `RenderQA` shows question/answer bubbles.
+4) In voice mode, recognized speech is auto-submitted and responses are spoken.
+
+## Backend Flow
+
+In `server/chat.js`:
+1) Load uploaded PDF
+2) Split text into chunks
+3) Generate embeddings
+4) Store chunks in in-memory vector store
+5) Run retrieval QA chain and return answer
+
+In `server/server.js`:
+- `filePath` is stored in memory and points to the latest uploaded file.
+- This resets when server restarts.
+
+## Troubleshooting
+
+### `Missing script: "dev"`
+You ran command inside `server/` folder.  
+Run from root `nextai/`:
+
+```bash
+npm run dev
+```
+
+### `Something is already running on port 3000`
+Another process is using port 3000:
+
+```bash
+lsof -i :3000
+kill -9 <PID>
+```
+
+### `No uploaded PDF found. Please call /upload first.`
+Upload endpoint was not called (or backend was restarted).  
+Upload a PDF first.
+
+### `Request failed with status code 401`
+OpenAI key issue:
+- invalid key
+- missing key
+- key not loaded from `server/.env`
+
+Restart backend after updating env.
+
+### `ENOENT: no such file or directory`
+Backend is trying to read a PDF path that does not exist.  
+Re-upload the file and retry.
+
+## Security Notes
+
+- Do not commit API keys.
+- If a key was exposed, rotate it immediately.
+- Keep `server/.env` in `.gitignore`.
+
+## Scripts
+
+Root `package.json`:
+
+- `npm run dev` -> run frontend + backend together
+- `npm start` -> run frontend only
+- `npm run server` -> run backend only
+- `npm run build` -> production build
