@@ -1,11 +1,6 @@
-// use npm start under this file
-
 import express from "express";
-// cross origin resources  
 import cors from "cors";
-// to use .env file 
 import dotenv from "dotenv";
-// to use API
 import multer from "multer"; // Import multer
 import chat from "./chat.js";
 
@@ -16,32 +11,56 @@ app.use(cors());
 
 // Configure multer
 const storage = multer.diskStorage({
-destination: function (req, file, cb) {
-cb(null, "uploads/");
-},
-filename: function (req, file, cb) {
-cb(null, file.originalname);
-},
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
 });
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
-// express asks to initalize a port num
-const PORT = 5001;
+const PORT = Number(process.env.PORT) || 5001;
 
 let filePath;
 
 app.post("/upload", upload.single("file"), async (req, res) => {
-// use multer to handle file upload
-filePath = req.file.path; // The path where the file is temporarily saved
-res.send(filePath + " upload successfully.");
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded. Use form-data with field name: file" });
+    }
+
+    // Use multer to handle file upload
+    filePath = req.file.path; // The path where the file is temporarily saved
+    return res.status(200).json({
+      message: `${filePath} upload successfully.`,
+      filePath,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    return res.status(500).json({ error: error.message || "Upload failed." });
+  }
 });
 
-// default parameter at the end
 app.get("/chat", async (req, res) => {
-const resp = await chat(req.query.question, filePath); // Pass the file path to main function
-res.send(resp.text);
+  try {
+    const question = String(req.query.question || "").trim();
+    if (!question) {
+      return res.status(400).json({ error: "Missing query param: question" });
+    }
+
+    if (!filePath) {
+      return res.status(400).json({ error: "No uploaded PDF found. Please call /upload first." });
+    }
+
+    const resp = await chat(question, filePath); // Pass the question and file path to chat
+    return res.status(200).send(resp.text);
+  } catch (error) {
+    console.error("Chat error:", error);
+    return res.status(500).json({ error: error.message || "Chat failed." });
+  }
 });
 
 app.listen(PORT, () => {
-console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
