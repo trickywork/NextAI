@@ -7,23 +7,30 @@ import Speech from "speak-tts";
 
 const { Search } = Input;
 
+// Frontend -> backend base URL (from root .env)
 const DOMAIN = process.env.REACT_APP_DOMAIN;
 
+// Container style for search bar + control buttons.
 const searchContainer = {
   display: "flex",
   justifyContent: "center",
 };
 
 const ChatComponent = (props) => {
+  // Parent callbacks/state from App.js
   const { handleResp, isLoading, setIsLoading } = props;
+
+  // UI states for input + voice chat mode.
   const [searchValue, setSearchValue] = useState("");
   const [isChatModeOn, setIsChatModeOn] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [speech, setSpeech] = useState(null);
 
+  // Speech recognition state provided by react-speech-recognition.
   const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition, isMicrophoneAvailable } =
     useSpeechRecognition();
 
+  // Initialize browser text-to-speech engine once on mount.
   useEffect(() => {
     const speech = new Speech();
     speech
@@ -43,6 +50,7 @@ const ChatComponent = (props) => {
       });
   }, []);
 
+  // When recording stops and transcript exists, auto-send transcript as a question.
   useEffect(() => {
     if (!listening && transcript) {
       (async () => await onSearch(transcript))();
@@ -51,6 +59,8 @@ const ChatComponent = (props) => {
     }
   }, [listening, transcript]);
 
+  // Speak out assistant response using TTS.
+  // In Chat Mode, restart microphone after speaking so conversation can continue.
   const talk = (text) => {
     if (!speech || !text) return;
 
@@ -71,6 +81,7 @@ const ChatComponent = (props) => {
       });
   };
 
+  // Toggle conversational voice mode.
   const chatModeClickHandler = () => {
     setIsChatModeOn((prev) => !prev);
     setIsRecording(false);
@@ -78,6 +89,7 @@ const ChatComponent = (props) => {
     resetTranscript();
   };
 
+  // Manual start/stop recording for microphone input.
   const recordingClickHandler = () => {
     if (isRecording) {
       setIsRecording(false);
@@ -89,6 +101,10 @@ const ChatComponent = (props) => {
     SpeechRecognition.startListening();
   };
 
+  // Core request function:
+  // - Sends user question to backend /chat
+  // - Pushes result back to App conversation state
+  // - Optionally reads response aloud in Chat Mode
   const onSearch = async (question) => {
     if (!question) return;
     setSearchValue("");
@@ -119,6 +135,7 @@ const ChatComponent = (props) => {
 
   return (
     <div style={searchContainer}>
+      {/* In voice chat mode, hide text search bar and use microphone controls instead */}
       {!isChatModeOn && (
         <Search
           placeholder="input search text"
@@ -140,17 +157,20 @@ const ChatComponent = (props) => {
         Chat Mode: {isChatModeOn ? "On" : "Off"}
       </Button>
       {isChatModeOn && (
-        <Button
-          type="primary"
-          icon={<AudioOutlined />}
-          size="large"
-          danger={isRecording}
-          onClick={recordingClickHandler}
-          style={{ marginLeft: "5px" }}
-          disabled={!browserSupportsSpeechRecognition || !isMicrophoneAvailable}
-        >
-          {isRecording ? "Recording..." : "Click to record"}
-        </Button>
+        <>
+          {/* Disable record button when browser/microphone support is unavailable. */}
+          <Button
+            type="primary"
+            icon={<AudioOutlined />}
+            size="large"
+            danger={isRecording}
+            onClick={recordingClickHandler}
+            style={{ marginLeft: "5px" }}
+            disabled={!browserSupportsSpeechRecognition || !isMicrophoneAvailable}
+          >
+            {isRecording ? "Recording..." : "Click to record"}
+          </Button>
+        </>
       )}
     </div>
   );

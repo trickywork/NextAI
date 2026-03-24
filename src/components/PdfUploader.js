@@ -5,8 +5,10 @@ import { message, Upload } from "antd";
 
 const { Dragger } = Upload;
 
+// Backend upload endpoint base URL.
 const DOMAIN = "http://localhost:5001";
 
+// Helper that uploads one file to backend /upload endpoint.
 const uploadToBackend = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -23,6 +25,9 @@ const uploadToBackend = async (file) => {
   }
 };
 
+// Ant Design Upload config object:
+// - customRequest replaces default upload behavior with Axios call
+// - onChange provides user feedback toast messages
 const attributes = {
   name: "file",
   multiple: true,
@@ -52,6 +57,7 @@ const attributes = {
   },
 };
 
+// Drag-and-drop uploader UI.
 const PdfUploader = () => {
   return (
     <Dragger {...attributes}>

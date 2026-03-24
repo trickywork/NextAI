@@ -1,6 +1,7 @@
 import React from "react";
 import { Spin } from "antd";
 
+// Layout styles for each QA block (user on right, assistant on left).
 const containerStyle = {
   display: "flex",
   justifyContent: "space-between",
@@ -39,10 +40,13 @@ const agentStyle = {
 };
 
 const RenderQA = (props) => {
+  // conversation shape: [{ question: string, answer: string }, ...]
+  // isLoading toggles spinner while waiting for backend response.
   const { conversation, isLoading } = props;
 
   return (
     <>
+      {/* Render conversation history as alternating user/assistant bubbles */}
       {conversation?.map((each, index) => {
         return (
           <div key={index} style={containerStyle}>
@@ -55,6 +59,7 @@ const RenderQA = (props) => {
           </div>
         );
       })}
+      {/* Show loading indicator during in-flight /chat requests */}
       {isLoading && <Spin size="large" style={{ margin: "10px" }} />}
     </>
   );
