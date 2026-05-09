@@ -6,7 +6,7 @@ NextAI is a full-stack PDF question-answering and voice chat app. Users upload a
 
 - Portfolio URL: `https://nextai.junliu.dev`
 - Cloud Run service: `nextai`
-- Cloud Run URL: `https://nextai-888561484971.us-central1.run.app`
+- Cloud Run URL: `https://nextai-gb7rmueyna-uc.a.run.app`
 - Google Cloud project: `caramel-vim-441513-e1`
 - Region: `us-central1`
 
@@ -165,7 +165,7 @@ pdfPath=/absolute/path/to/sample.pdf
 For Cloud Run testing:
 
 ```text
-baseUrl=https://nextai-888561484971.us-central1.run.app
+baseUrl=https://nextai-gb7rmueyna-uc.a.run.app
 ```
 
 ## Build
