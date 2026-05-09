@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Input } from "antd";
 import { AudioOutlined } from "@ant-design/icons";
@@ -50,18 +50,9 @@ const ChatComponent = (props) => {
       });
   }, []);
 
-  // When recording stops and transcript exists, auto-send transcript as a question.
-  useEffect(() => {
-    if (!listening && transcript) {
-      (async () => await onSearch(transcript))();
-      setIsRecording(false);
-      resetTranscript();
-    }
-  }, [listening, transcript]);
-
   // Speak out assistant response using TTS.
   // In Chat Mode, restart microphone after speaking so conversation can continue.
-  const talk = (text) => {
+  const talk = useCallback((text) => {
     if (!speech || !text) return;
 
     speech
@@ -79,7 +70,7 @@ const ChatComponent = (props) => {
       .catch((e) => {
         console.error("Speech speak failed:", e);
       });
-  };
+  }, [isChatModeOn, resetTranscript, speech]);
 
   // Toggle conversational voice mode.
   const chatModeClickHandler = () => {
@@ -105,7 +96,7 @@ const ChatComponent = (props) => {
   // - Sends user question to backend /chat
   // - Pushes result back to App conversation state
   // - Optionally reads response aloud in Chat Mode
-  const onSearch = async (question) => {
+  const onSearch = useCallback(async (question) => {
     if (!question) return;
     setSearchValue("");
     setIsLoading(true);
@@ -127,7 +118,16 @@ const ChatComponent = (props) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [handleResp, isChatModeOn, setIsLoading, talk]);
+
+  // When recording stops and transcript exists, auto-send transcript as a question.
+  useEffect(() => {
+    if (!listening && transcript) {
+      (async () => await onSearch(transcript))();
+      setIsRecording(false);
+      resetTranscript();
+    }
+  }, [listening, onSearch, resetTranscript, transcript]);
 
   const handleChange = (e) => {
     setSearchValue(e.target.value);

@@ -37,7 +37,7 @@ Use `server/.env.example` as the template. Do not commit real API keys.
 ## Local Startup
 
 ```bash
-cd /Users/junliu/git_repo/nextai
+cd nextai
 npm install
 cd server
 npm install
@@ -54,7 +54,7 @@ Backend: `http://localhost:5001`
 Postman collection:
 
 ```text
-postman/NextAI.postman_collection.json
+NextAI - Portfolio API Smoke Tests
 ```
 
 Variables:

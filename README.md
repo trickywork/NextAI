@@ -1,5 +1,7 @@
 # NextAI
 
+[![CI](https://github.com/trickywork/NextAI/actions/workflows/ci.yml/badge.svg)](https://github.com/trickywork/NextAI/actions/workflows/ci.yml)
+
 NextAI is a full-stack PDF question-answering and voice chat app. Users upload a PDF, ask questions about its content, and optionally use browser speech recognition plus text-to-speech for a voice-style assistant flow.
 
 ## Live Demo
@@ -151,7 +153,7 @@ Use the local Postman workspace collections:
 
 ```text
 NextAi
-202409 NextAI - Coding Pad API Tests
+NextAI - Portfolio API Smoke Tests
 ```
 
 Suggested variables:
@@ -167,11 +169,7 @@ For Cloud Run testing:
 baseUrl=https://nextai-gb7rmueyna-uc.a.run.app
 ```
 
-The repo-exported backup copy is stored outside GitHub at:
-
-```text
-/Users/junliu/CourseArtifacts/postman/project-exported/NextAI.postman_collection.json
-```
+The exported backup copy is kept in a private local archive outside this public repo.
 
 ## Build
 
