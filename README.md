@@ -138,3 +138,25 @@ In `server/chat.js`:
 In `server/server.js`:
 - `filePath` is stored in memory and points to the latest uploaded file.
 - This resets when server restarts.
+
+## Cloud Deployment
+
+- Cloud Run service: `nextai`
+- Current URL: `https://nextai-gb7rmueyna-uc.a.run.app`
+- Custom domain mapping: `nextai.junliu.dev`
+- GitHub trigger: `nextai-main-deploy`
+
+Deployment config lives in `Dockerfile` and `cloudbuild.yaml`. More notes are in `docs/deployment.md`.
+
+## Postman
+
+Import `postman/NextAI.postman_collection.json`.
+
+Set:
+
+```text
+baseUrl=http://localhost:5001
+pdfPath=/absolute/path/to/sample.pdf
+```
+
+For Cloud Run, set `baseUrl` to `https://nextai-gb7rmueyna-uc.a.run.app`.

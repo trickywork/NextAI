@@ -1,0 +1,42 @@
+{
+  "info": {
+    "name": "NextAI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001"
+    },
+    {
+      "key": "pdfPath",
+      "value": "/absolute/path/to/sample.pdf"
+    }
+  ],
+  "item": [
+    {
+      "name": "Upload PDF",
+      "request": {
+        "method": "POST",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "{{pdfPath}}"
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/upload"
+      }
+    },
+    {
+      "name": "Ask Question",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/chat?question=What%20is%20this%20PDF%20about%3F"
+      }
+    }
+  ]
+}
