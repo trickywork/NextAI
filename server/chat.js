@@ -8,7 +8,7 @@ import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 
 // Fallback values used when caller does not pass a file path/model explicitly.
 const DEFAULT_FILE_PATH = "./uploads/your-default-file.pdf";
-const DEFAULT_MODEL_NAME = "gpt-5.4-nano";
+const DEFAULT_MODEL_NAME = "gpt-4o-mini";
 
 // Main QA pipeline over a single PDF.
 // Input:

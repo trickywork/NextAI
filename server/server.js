@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import multer from "multer"; // Import multer
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import chat from "./chat.js";
 
 // Load environment variables from server/.env at startup.
@@ -12,12 +15,17 @@ dotenv.config();
 const app = express();
 app.use(cors());
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
+
 // Multer storage strategy:
 // 1) Save uploaded files under server/uploads/
 // 2) Keep the original filename as-is
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname);
@@ -75,6 +83,14 @@ app.get("/chat", async (req, res) => {
     return res.status(500).json({ error: error.message || "Chat failed." });
   }
 });
+
+const buildDir = path.join(__dirname, "..", "build");
+if (fs.existsSync(buildDir)) {
+  app.use(express.static(buildDir));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(buildDir, "index.html"));
+  });
+}
 
 // Start HTTP server.
 app.listen(PORT, () => {

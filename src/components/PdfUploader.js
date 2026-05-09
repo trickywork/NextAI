@@ -6,7 +6,7 @@ import { message, Upload } from "antd";
 const { Dragger } = Upload;
 
 // Backend upload endpoint base URL.
-const DOMAIN = "http://localhost:5001";
+const DOMAIN = process.env.REACT_APP_DOMAIN || "";
 
 // Helper that uploads one file to backend /upload endpoint.
 const uploadToBackend = async (file) => {

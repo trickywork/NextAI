@@ -8,7 +8,7 @@ import Speech from "speak-tts";
 const { Search } = Input;
 
 // Frontend -> backend base URL (from root .env)
-const DOMAIN = process.env.REACT_APP_DOMAIN;
+const DOMAIN = process.env.REACT_APP_DOMAIN || "";
 
 // Container style for search bar + control buttons.
 const searchContainer = {
