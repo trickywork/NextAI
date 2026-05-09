@@ -148,6 +148,10 @@ In `server/server.js`:
 
 Deployment config lives in `Dockerfile` and `cloudbuild.yaml`. More notes are in `docs/deployment.md`.
 
+## Configuration Notes
+
+Non-code setup is documented in `docs/configuration.md`, including env files, OpenAI Secret Manager setup, temporary upload storage, and the fact that this project does not use a database.
+
 ## Postman
 
 Import `postman/NextAI.postman_collection.json`.
