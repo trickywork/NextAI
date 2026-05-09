@@ -4,6 +4,9 @@ substitutions:
   _IMAGE_NAME: nextai
   _SERVICE_NAME: nextai
 
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
   - name: gcr.io/cloud-builders/docker
     args:
