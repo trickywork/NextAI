@@ -17,7 +17,7 @@ NextAI is a full-stack PDF question-answering and voice chat app. Users upload a
 - Backend: Node.js, Express, Multer
 - AI/RAG: LangChain, OpenAI embeddings, OpenAI chat model, in-memory vector store
 - Deployment: Docker, Google Cloud Build, Google Cloud Run
-- API testing: Postman collection in `postman/NextAI.postman_collection.json`
+- API testing via local Postman workspace
 
 ## Project Structure
 
@@ -36,8 +36,6 @@ nextai/
   docs/
     configuration.md
     deployment.md
-  postman/
-    NextAI.postman_collection.json
   Dockerfile
   cloudbuild.yaml
 ```
@@ -149,10 +147,11 @@ Important: upload a PDF after each backend restart before calling `/chat`.
 
 ## Postman
 
-Import:
+Use the local Postman workspace collections:
 
 ```text
-postman/NextAI.postman_collection.json
+NextAi
+202409 NextAI - Coding Pad API Tests
 ```
 
 Suggested variables:
@@ -166,6 +165,12 @@ For Cloud Run testing:
 
 ```text
 baseUrl=https://nextai-gb7rmueyna-uc.a.run.app
+```
+
+The repo-exported backup copy is stored outside GitHub at:
+
+```text
+/Users/junliu/CourseArtifacts/postman/project-exported/NextAI.postman_collection.json
 ```
 
 ## Build
