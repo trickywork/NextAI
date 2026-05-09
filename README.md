@@ -1,30 +1,27 @@
-# NextAI (PDF Q&A + Voice Chat)
+# NextAI
 
-A full-stack app that lets you:
-- upload a PDF
-- ask questions about that PDF (RAG with LangChain)
-- optionally use voice chat mode (speech recognition + text-to-speech)
+NextAI is a full-stack PDF question-answering and voice chat app. Users upload a PDF, ask questions about its content, and optionally use browser speech recognition plus text-to-speech for a voice-style assistant flow.
 
-Frontend: React + Ant Design  
-Backend: Express + Multer + LangChain + OpenAI
+## Live Demo
 
-## Features
-
-- PDF upload to backend (`/upload`)
-- Question answering over uploaded PDF (`/chat?question=...`)
-- Conversation history UI
-- Voice chat mode:
-  - speech recognition (microphone -> text)
-  - text-to-speech (assistant answer -> audio)
+- Portfolio URL: `https://nextai.junliu.dev`
+- Cloud Run service: `nextai`
+- Cloud Run URL: `https://nextai-888561484971.us-central1.run.app`
+- Google Cloud project: `caramel-vim-441513-e1`
+- Region: `us-central1`
 
 ## Tech Stack
 
-- Frontend: `react`, `antd`, `axios`, `speak-tts`, `react-speech-recognition`
-- Backend: `express`, `multer`, `dotenv`, `langchain`
+- Frontend: React 18, Ant Design, Axios
+- Voice features: `react-speech-recognition`, `speak-tts`
+- Backend: Node.js, Express, Multer
+- AI/RAG: LangChain, OpenAI embeddings, OpenAI chat model, in-memory vector store
+- Deployment: Docker, Google Cloud Build, Google Cloud Run
+- API testing: Postman collection in `postman/NextAI.postman_collection.json`
 
 ## Project Structure
 
-```txt
+```text
 nextai/
   src/
     App.js
@@ -33,134 +30,177 @@ nextai/
       PdfUploader.js
       RenderQA.js
   server/
-    server.js      # Express API (/upload, /chat)
-    chat.js        # LangChain PDF QA pipeline
-    uploads/       # Uploaded PDFs
+    server.js
+    chat.js
+    uploads/
+  docs/
+    configuration.md
+    deployment.md
+  postman/
+    NextAI.postman_collection.json
+  Dockerfile
+  cloudbuild.yaml
 ```
 
 ## Environment Variables
 
-Create these files:
-
-1) Root `.env`:
+Root `.env` for the React app:
 
 ```env
 REACT_APP_DOMAIN=http://localhost:5001
 ```
 
-2) `server/.env`:
+`server/.env` for the Express API:
 
 ```env
-OPENAI_API_KEY=your_openai_key
-# Optional:
-# OPENAI_CHAT_MODEL=gpt-5.4-nano
-# PORT=5001
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_CHAT_MODEL=gpt-4o-mini
+PORT=5001
+UPLOAD_DIR=server/uploads
 ```
 
 Notes:
-- Backend currently supports both `OPENAI_API_KEY` and `REACT_APP_OPENAI_API_KEY`.
-- Use `OPENAI_API_KEY` going forward.
 
-## Install
+- `OPENAI_API_KEY` is required for local AI responses.
+- `OPENAI_CHAT_MODEL` is optional; the backend defaults to a small OpenAI chat model when omitted.
+- Uploaded PDFs are stored locally during development and in container-local temporary storage on Cloud Run.
+- There is no database. The latest uploaded PDF path is kept in memory and resets when the server restarts.
 
-From project root:
+## Local Development
+
+Install dependencies from the repo root:
 
 ```bash
 npm install
-cd server && npm install && cd ..
+cd server
+npm install
+cd ..
 ```
 
-## Run
-
-From project root:
+Run frontend and backend together:
 
 ```bash
 npm run dev
 ```
 
-This runs:
-- frontend at `http://localhost:3000`
-- backend at `http://localhost:5001`
+Expected local URLs:
 
-If port 3000 is occupied:
+```text
+Frontend: http://localhost:3000
+Backend:  http://localhost:5001
+```
+
+If you only want the backend:
 
 ```bash
-kill -9 $(lsof -ti :3000)
-npm run dev
+npm run server
 ```
+
+## How To Use
+
+1. Open the frontend.
+2. Upload a PDF file.
+3. Ask a question about the uploaded document.
+4. Turn on voice mode if you want microphone input and spoken answers.
+
+Expected result:
+
+- Upload succeeds and the UI confirms the file is available.
+- A question such as "What is this document about?" returns an answer grounded in the uploaded PDF.
+- Conversation history remains visible in the chat panel.
+- Voice mode can submit recognized speech and speak the assistant response in supported browsers.
 
 ## API Endpoints
 
-### 1) Upload PDF
+### Upload PDF
 
-`POST /upload`
-
-- Content type: `multipart/form-data`
-- Field name: `file`
-
-Example with curl:
-
-```bash
-curl -X POST http://localhost:5001/upload \
-  -F "file=@/absolute/path/to/your.pdf"
+```http
+POST /upload
 ```
 
-### 2) Ask Question
+Request type: `multipart/form-data`
 
-`GET /chat?question=...`
+Field name:
+
+```text
+file
+```
 
 Example:
 
 ```bash
-curl "http://localhost:5001/chat?question=What%20is%20this%20pdf%20about%3F"
+curl -X POST http://localhost:5001/upload \
+  -F "file=@/absolute/path/to/sample.pdf"
 ```
 
-Important:
-- You must upload a PDF first after each server restart.
-- Do not wrap question with extra single quotes.
+### Ask Question
 
-## Frontend Flow
+```http
+GET /chat?question=...
+```
 
-1) `PdfUploader` uploads selected file to backend.
-2) `ChatComponent` sends user question to `/chat`.
-3) `RenderQA` shows question/answer bubbles.
-4) In voice mode, recognized speech is auto-submitted and responses are spoken.
+Example:
 
-## Backend Flow
+```bash
+curl "http://localhost:5001/chat?question=What%20is%20this%20PDF%20about%3F"
+```
 
-In `server/chat.js`:
-1) Load uploaded PDF
-2) Split text into chunks
-3) Generate embeddings
-4) Store chunks in in-memory vector store
-5) Run retrieval QA chain and return answer
-
-In `server/server.js`:
-- `filePath` is stored in memory and points to the latest uploaded file.
-- This resets when server restarts.
-
-## Cloud Deployment
-
-- Cloud Run service: `nextai`
-- Current URL: `https://nextai-gb7rmueyna-uc.a.run.app`
-- Custom domain mapping: `nextai.junliu.dev`
-- GitHub trigger: `nextai-main-deploy`
-
-Deployment config lives in `Dockerfile` and `cloudbuild.yaml`. More notes are in `docs/deployment.md`.
-
-## Configuration Notes
-
-Non-code setup is documented in `docs/configuration.md`, including env files, OpenAI Secret Manager setup, temporary upload storage, and the fact that this project does not use a database.
+Important: upload a PDF after each backend restart before calling `/chat`.
 
 ## Postman
 
-Import `postman/NextAI.postman_collection.json`.
+Import:
 
-Set:
+```text
+postman/NextAI.postman_collection.json
+```
+
+Suggested variables:
 
 ```text
 baseUrl=http://localhost:5001
 pdfPath=/absolute/path/to/sample.pdf
 ```
 
-For Cloud Run, set `baseUrl` to `https://nextai-gb7rmueyna-uc.a.run.app`.
+For Cloud Run testing:
+
+```text
+baseUrl=https://nextai-888561484971.us-central1.run.app
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+The Docker deployment builds the React frontend and serves it together with the Express backend.
+
+## Cloud Deployment
+
+Manual deployment:
+
+```bash
+gcloud builds submit \
+  --config cloudbuild.yaml \
+  --project caramel-vim-441513-e1
+```
+
+Cloud Run is configured for low-cost portfolio hosting:
+
+- `min-instances=0`
+- small container footprint
+- no database
+- no persistent storage
+- OpenAI API usage is the main variable runtime cost
+
+## Expected Portfolio Behavior
+
+The deployed app should let a visitor upload a PDF, ask at least one question, and see a generated answer. Because this is a portfolio demo, uploaded files and chat context are temporary and should not be treated as permanent user data.
+
+## Additional Notes
+
+More setup details are kept in:
+
+- `docs/configuration.md`
+- `docs/deployment.md`
